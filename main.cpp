@@ -1,18 +1,21 @@
 #include <iostream>
 
-struct Crop {
-
-    enum Stage{
+class Crop {
+public:
+    enum Stage {
         Seed,
         Sprouted,
         Matured,
         Withered
     };
 
+private:
     Stage current = Seed;
     int wateringProgress = 0;
     int grace = 2;
     bool wateredToday = false;
+
+public:
 
     void Water(){
 
@@ -30,8 +33,8 @@ struct Crop {
             } 
         }
 
-    }
-    
+    }   
+
     void DayCheck(){
 
         if(current == Matured || current == Withered){
@@ -68,9 +71,13 @@ struct Crop {
 
 
         wateredToday = false;
-    }
+    } 
 
-    
+};
+
+struct Tile {
+    bool hasCrop = false;
+    Crop crop;
 };
 
 int main(){
@@ -78,21 +85,20 @@ int main(){
     std::cout<<"*******YOUR FARM********\n";
 
     int day = 1;
-
-    char farm[3][3];
-
-    for(int row = 0; row < 3; row++){
-        for(int col = 0; col < 3; col++){
-            farm[row][col] = '.';
-        }
-    }
+    Tile farm[3][3];
 
     for(int row = 0; row < 3; row++){
         for(int col = 0; col < 3; col++){
-            std::cout<<farm[row][col];
+            if (farm[row][col].hasCrop == true) {
+                std::cout<<"S";
+            }
+            else if (farm[row][col].hasCrop == false) {
+                std::cout<<".";
+            }
         }
         std::cout<<"\n";
     }
+
 
     std::cout << "\nDay: " << day << '\n';
 
@@ -115,8 +121,13 @@ int main(){
         std::cin >> c;
     }
 
-    if (farm[r][c] == '.') {
-        farm[r][c] = 'S';
+    if (farm[r][c].hasCrop == false) {
+
+        farm[r][c].hasCrop = true;
+
+        Crop crop;
+        farm[r][c].crop = crop;
+
         std::cout << "\nYour seed has been planted!\n";
     }   
     else {
@@ -128,11 +139,15 @@ int main(){
 
     for(int row = 0; row < 3; row++){
         for(int col = 0; col < 3; col++){
-            std::cout<<farm[row][col];
+            if (farm[row][col].hasCrop == true) {
+                std::cout<<"S";
+            }
+            else if (farm[row][col].hasCrop == false) {
+                std::cout<<".";
+            }
         }
         std::cout<<"\n";
     }
-
 
 
 
