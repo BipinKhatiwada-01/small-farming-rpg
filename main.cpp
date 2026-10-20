@@ -69,7 +69,6 @@ public:
             }
         }
 
-
         wateredToday = false;
     } 
 
@@ -106,16 +105,16 @@ int main(){
 
         std::cout<<"\n==============Small farming RPG==================\n";
         std::cout<<"1. Plant a crop\n";
-        std::cout<<"2. Quit\n";
-
-
+        std::cout<<"2. Water a crop\n";
+        std::cout<<"3. End day\n";
+        std::cout<<"4. Quit\n";
 
         int choice;
         std::cout<<"\n\nChoose an action: ";
         std::cin>>choice;
 
-        while(choice < 1 || choice >=3) {
-            std::cout << "Invalid choice! Enter a 1 or 2: ";
+        while(choice < 1 || choice > 4) {
+            std::cout << "Invalid choice! Enter 1 to 4: ";
             std::cin >> choice;
         }
 
@@ -154,13 +153,50 @@ int main(){
 
         }
         else if (choice == 2) {
+                        int r;
+            std::cout << "Enter row (0 to 2): ";
+            std::cin >> r;
+
+            while (r < 0 || r >= 3) {
+                std::cout << "Invalid row! Enter a value from 0 to 2: ";
+                std::cin >> r;
+            }
+
+            int c;
+            std::cout << "Enter column (0 to 2): ";
+            std::cin >> c;
+
+            while (c < 0 || c >= 3) {
+                std::cout << "Invalid column! Enter a value from 0 to 2: ";
+                std::cin >> c;
+            }
+            
+            if (farm[r][c].hasCrop == true) { 
+
+                farm[r][c].crop.Water();
+
+            }   
+            else {
+                std::cout << "\nCan't water in an empty land!\n";
+            }
+        }
+        else if (choice == 3) {
+            for(int row = 0; row < 3; row++){
+                for(int col = 0; col < 3; col++){
+                    if (farm[row][col].hasCrop == true) {
+
+                        farm[row][col].crop.DayCheck();
+
+                    }
+                }
+            }
+            day++;
+        }
+        else if (choice == 4) {
             std::cout<<"==========Thanks for playing !!=================\n";
             running = false;
        } 
 
-
     }
-    
-
 
 }
