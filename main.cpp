@@ -82,73 +82,85 @@ struct Tile {
 
 int main(){
 
-    std::cout<<"*******YOUR FARM********\n";
-
     int day = 1;
     Tile farm[3][3];
 
-    for(int row = 0; row < 3; row++){
-        for(int col = 0; col < 3; col++){
-            if (farm[row][col].hasCrop == true) {
-                std::cout<<"S";
+    bool running = true;
+
+    while(running){
+
+        std::cout<<"====================YOUR FARM=====================\n";
+        std::cout << "\nDay: " << day << '\n';
+
+        for(int row = 0; row < 3; row++){
+            for(int col = 0; col < 3; col++){
+                if (farm[row][col].hasCrop == true) {
+                    std::cout<<"S";
+                }
+                else if (farm[row][col].hasCrop == false) {
+                    std::cout<<".";
+                }
             }
-            else if (farm[row][col].hasCrop == false) {
-                std::cout<<".";
-            }
+                std::cout<<"\n";
         }
-        std::cout<<"\n";
-    }
+
+        std::cout<<"\n==============Small farming RPG==================\n";
+        std::cout<<"1. Plant a crop\n";
+        std::cout<<"2. Quit\n";
 
 
-    std::cout << "\nDay: " << day << '\n';
 
-    std::cout<<"\n***********************\n";
-    int r;
-    std::cout << "Enter row (0 to 2): ";
-    std::cin >> r;
+        int choice;
+        std::cout<<"\n\nChoose an action: ";
+        std::cin>>choice;
 
-    while (r < 0 || r >= 3) {
-        std::cout << "Invalid row! Enter a value from 0 to 2: ";
-        std::cin >> r;
-    }
-
-    int c;
-    std::cout << "Enter column (0 to 2): ";
-    std::cin >> c;
-
-    while (c < 0 || c >= 3) {
-        std::cout << "Invalid column! Enter a value from 0 to 2: ";
-        std::cin >> c;
-    }
-
-    if (farm[r][c].hasCrop == false) {
-
-        farm[r][c].hasCrop = true;
-
-        Crop crop;
-        farm[r][c].crop = crop;
-
-        std::cout << "\nYour seed has been planted!\n";
-    }   
-    else {
-        std::cout << "\nThat tile is already occupied!\n";
-    }
-
-
-    std::cout<<"\n*******YOUR FARM********\n";
-
-    for(int row = 0; row < 3; row++){
-        for(int col = 0; col < 3; col++){
-            if (farm[row][col].hasCrop == true) {
-                std::cout<<"S";
-            }
-            else if (farm[row][col].hasCrop == false) {
-                std::cout<<".";
-            }
+        while(choice < 1 || choice >=3) {
+            std::cout << "Invalid choice! Enter a 1 or 2: ";
+            std::cin >> choice;
         }
-        std::cout<<"\n";
-    }
 
+        if (choice == 1) {
+
+            int r;
+            std::cout << "Enter row (0 to 2): ";
+            std::cin >> r;
+
+            while (r < 0 || r >= 3) {
+                std::cout << "Invalid row! Enter a value from 0 to 2: ";
+                std::cin >> r;
+            }
+
+            int c;
+            std::cout << "Enter column (0 to 2): ";
+            std::cin >> c;
+
+            while (c < 0 || c >= 3) {
+                std::cout << "Invalid column! Enter a value from 0 to 2: ";
+                std::cin >> c;
+            }
+
+            if (farm[r][c].hasCrop == false) { 
+
+                Crop crop;
+                farm[r][c].crop = crop;
+
+                farm[r][c].hasCrop = true;
+
+                std::cout << "\nYour seed has been planted!\n";
+            }   
+            else {
+                std::cout << "\nThat tile is already occupied!\n";
+            }
+
+        }
+        else if (choice == 2) {
+            std::cout<<"==========Thanks for playing !!=================\n";
+            running = false;
+       } 
+
+
+    }
+    
 
 
 }
