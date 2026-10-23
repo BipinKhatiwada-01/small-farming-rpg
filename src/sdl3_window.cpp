@@ -3,6 +3,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_oldnames.h>
+#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
@@ -54,11 +55,28 @@ int main() {
 
         SDL_SetRenderDrawColor(renderingPointer, 40, 80, 55, 255);
         SDL_RenderClear(renderingPointer);
+        SDL_SetRenderDrawColor(renderingPointer, 145, 100, 60, 255);
+        
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+
+                float x = 100 + col * 100;
+                float y = 100 + row * 100;
+
+
+                    SDL_FRect tileRect{x, y, 90.0f, 90.0f};
+
+                    SDL_RenderFillRect(renderingPointer, &tileRect);
+
+            }
+        }
+
+
         SDL_RenderPresent(renderingPointer);
 
         SDL_Delay(16);
     }
-    
+
     SDL_DestroyRenderer(renderingPointer);
     SDL_DestroyWindow(window);
     SDL_Quit();
