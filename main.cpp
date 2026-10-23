@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 
 class Crop {
 public:
@@ -72,12 +73,64 @@ public:
         wateredToday = false;
     } 
 
+    Stage GetStage() const{
+        return current;
+    }
+
 };
 
 struct Tile {
     bool hasCrop = false;
     Crop crop;
 };
+
+void GetCoordinates(int& row, int& col){
+
+    while (true) {
+        std::cout << "Enter row (0 to 2): ";
+
+        if (std::cin >> row) {
+            if (row >= 0 && row < 3) {
+                std::cin.ignore(
+                    std::numeric_limits<std::streamsize>::max(), '\n'
+                );
+                break;
+            }
+        }
+        else {
+            std::cin.clear();
+        }
+
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(), '\n'
+        );
+
+        std::cout << "Invalid row! Enter a value from 0 to 2.\n";
+    }
+
+    while (true) {
+        std::cout << "Enter column (0 to 2): ";
+
+        if (std::cin >> col) {
+            if (col >= 0 && col < 3) {
+            std::cin.ignore(
+                    std::numeric_limits<std::streamsize>::max(), '\n'
+            );
+                break;
+            }
+        }
+        else {
+            std::cin.clear();
+        }
+
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(), '\n'
+        );
+
+        std::cout << "Invalid column! Enter a value from 0 to 2.\n";
+    }
+
+}
 
 int main(){
 
@@ -93,12 +146,23 @@ int main(){
 
         for(int row = 0; row < 3; row++){
             for(int col = 0; col < 3; col++){
-                if (farm[row][col].hasCrop == true) {
-                    std::cout<<"S";
+
+                if (farm[row][col].hasCrop == false) {
+                    std::cout<<"🟫";
+                }                
+                else if (farm[row][col].crop.GetStage() == Crop::Seed ) {
+                    std::cout<<"🟤";
                 }
-                else if (farm[row][col].hasCrop == false) {
-                    std::cout<<".";
+                else if (farm[row][col].crop.GetStage() == Crop::Sprouted) {
+                    std::cout<<"🌱";
                 }
+                else if (farm[row][col].crop.GetStage() == Crop::Matured) {
+                    std::cout<<"🌿";
+                }
+                else if (farm[row][col].crop.GetStage() == Crop::Withered) {
+                    std::cout<<"🍂";
+                }
+
             }
                 std::cout<<"\n";
         }
@@ -110,33 +174,42 @@ int main(){
         std::cout<<"4. Quit\n";
 
         int choice;
-        std::cout<<"\n\nChoose an action: ";
-        std::cin>>choice;
 
-        while(choice < 1 || choice > 4) {
-            std::cout << "Invalid choice! Enter 1 to 4: ";
-            std::cin >> choice;
+        while (true) {
+            std::cout << "Choose an action: ";
+
+            if (std::cin >> choice) {
+                if (choice >= 1 && choice <= 4) {
+                    std::cin.ignore(
+                        std::numeric_limits<std::streamsize>::max(), '\n'
+                    );
+                    break;
+                }
+
+                // An integer was read, but it was out of range.
+                std::cin.ignore(
+                    std::numeric_limits<std::streamsize>::max(), '\n'
+                );
+            }
+            else {
+                
+                // The input operation failed.
+                std::cin.clear();
+                std::cin.ignore(
+                    std::numeric_limits<std::streamsize>::max(), '\n'
+                );
+            }
+
+                std::cout << "Invalid choice! Enter a value from 1 to 4.\n";
+        
         }
 
         if (choice == 1) {
 
             int r;
-            std::cout << "Enter row (0 to 2): ";
-            std::cin >> r;
-
-            while (r < 0 || r >= 3) {
-                std::cout << "Invalid row! Enter a value from 0 to 2: ";
-                std::cin >> r;
-            }
-
             int c;
-            std::cout << "Enter column (0 to 2): ";
-            std::cin >> c;
 
-            while (c < 0 || c >= 3) {
-                std::cout << "Invalid column! Enter a value from 0 to 2: ";
-                std::cin >> c;
-            }
+            GetCoordinates(r, c);
 
             if (farm[r][c].hasCrop == false) { 
 
@@ -153,23 +226,11 @@ int main(){
 
         }
         else if (choice == 2) {
-                        int r;
-            std::cout << "Enter row (0 to 2): ";
-            std::cin >> r;
-
-            while (r < 0 || r >= 3) {
-                std::cout << "Invalid row! Enter a value from 0 to 2: ";
-                std::cin >> r;
-            }
-
+            
+            int r;
             int c;
-            std::cout << "Enter column (0 to 2): ";
-            std::cin >> c;
 
-            while (c < 0 || c >= 3) {
-                std::cout << "Invalid column! Enter a value from 0 to 2: ";
-                std::cin >> c;
-            }
+            GetCoordinates(r, c);
             
             if (farm[r][c].hasCrop == true) { 
 
