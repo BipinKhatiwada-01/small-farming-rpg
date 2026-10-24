@@ -45,7 +45,7 @@ int main() {
     } 
 
     Tile farm[3][3];
-    farm[1][1].hasCrop = true;
+    int day = 1;
 
     int selectedRow = -1;
     int selectedCol = -1;
@@ -77,6 +77,50 @@ int main() {
 
                 selectedCol = relativeX / 100;
                 selectedRow = relativeY / 100;
+            }
+            else if (event.type == SDL_EVENT_KEY_DOWN &&
+                    event.key.key == SDLK_P &&
+                    !event.key.repeat) {
+
+                    if (selectedRow < 0 || selectedCol < 0) {
+                        std::cout << "Select a tile first !\n";
+                    }
+                    else if (farm[selectedRow][selectedCol].hasCrop == true) {
+                        std::cout << "That tile is already occupied !\n";
+                    }
+                    else {
+                        farm[selectedRow][selectedCol].hasCrop = true;
+                        std::cout << "Seed planted !!\n";
+                    }
+            }
+            else if (event.type == SDL_EVENT_KEY_DOWN &&
+                    event.key.key == SDLK_W &&
+                    !event.key.repeat) {
+
+                        if(selectedRow < 0 || selectedCol < 0){
+                            std::cout << "Select a tile first !\n";      
+                        }
+                        else if(farm[selectedRow][selectedCol].hasCrop == false){
+                            std::cout << "You can't apply water there\n";
+                        }
+                        else{
+                            farm[selectedRow][selectedCol].crop.Water();
+                        }
+            }
+            else if (event.type == SDL_EVENT_KEY_DOWN &&
+                    event.key.key == SDLK_E &&
+                    !event.key.repeat) {
+
+                    for (int row = 0; row < 3; row++) {
+                        for (int col = 0; col < 3; col++) {
+
+                            if (farm[row][col].hasCrop) {
+                                farm[row][col].crop.DayCheck();
+                            }
+                        }
+                    }
+                    day++;
+                    std::cout << "Day " << day << " begins!\n";
             }
         }
 
