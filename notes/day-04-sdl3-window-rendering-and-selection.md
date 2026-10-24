@@ -9,7 +9,7 @@
 The project now has these relevant files:
 
 ```text
-farming-rpg/
+src/
 ├── main.cpp               # Existing console game and console entry point
 ├── farm.hpp               # Shared Crop class and Tile struct
 └── sdl3_window.cpp    # SDL3 experiment and graphical entry point
