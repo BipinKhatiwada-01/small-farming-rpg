@@ -8,7 +8,9 @@
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
+#include <string>
 #include "farm.hpp"
 #include <iostream>
 
@@ -74,6 +76,81 @@ int main() {
 
     SDL_SetTextureScaleMode(terrainSheet, SDL_SCALEMODE_NEAREST);
 
+    if(!TTF_Init()) {
+        std::cerr << "SDL_ttf failed to initialize: "
+              << SDL_GetError() << '\n';
+
+        SDL_DestroyTexture(terrainSheet);
+        SDL_DestroyTexture(cropSheet);
+        SDL_DestroyRenderer(renderingPointer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    TTF_Font* font = TTF_OpenFont(
+    "/usr/share/fonts/google-noto/NotoSans-Regular.ttf",
+    24.0f
+    );
+
+    if(font == nullptr) {
+        std::cerr << "Font failed to load: " << SDL_GetError() << '\n';
+
+        TTF_Quit();
+        SDL_DestroyTexture(terrainSheet);
+        SDL_DestroyTexture(cropSheet);
+        SDL_DestroyRenderer(renderingPointer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_Color textColor{255, 255, 255, 255};
+
+    SDL_Surface* daySurface = TTF_RenderText_Blended(
+        font, "Day 1", 0, textColor
+    );
+
+    if(daySurface == nullptr) {
+        std::cerr << "Text rendering failed: " << SDL_GetError() << '\n';
+
+        TTF_CloseFont(font);
+        TTF_Quit();
+        SDL_DestroyTexture(terrainSheet);
+        SDL_DestroyTexture(cropSheet);
+        SDL_DestroyRenderer(renderingPointer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_Texture* dayTexture = SDL_CreateTextureFromSurface(
+        renderingPointer, daySurface
+    );
+
+    if(dayTexture == nullptr) {
+        std::cerr << "Failed to create day texture: "
+              << SDL_GetError() << '\n';
+
+        SDL_DestroySurface(daySurface);
+        TTF_CloseFont(font);
+        TTF_Quit();
+        SDL_DestroyTexture(terrainSheet);
+        SDL_DestroyTexture(cropSheet);
+        SDL_DestroyRenderer(renderingPointer);
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return 1;
+    }
+
+    SDL_FRect dayRect{
+        24.0f,
+        24.0f,
+        static_cast<float>(daySurface->w),
+        static_cast<float>(daySurface->h)
+    };
+
+    SDL_DestroySurface(daySurface);
     // These rectangles select 16x16 tiles from the terrain sheet.
     const SDL_FRect grassSource{0.0f, 16.0f, 16.0f, 16.0f};
     const SDL_FRect wildGrassA{16.0f, 0.0f, 16.0f, 16.0f};
@@ -151,6 +228,36 @@ int main() {
                 }
 
                 day++;
+                std::string dayText = "Day " + std::to_string(day);
+
+                SDL_Surface* newDaySurface = TTF_RenderText_Blended(
+                    font, dayText.c_str(), 0, textColor
+                );
+
+                if(newDaySurface != nullptr) {
+                    SDL_Texture* newDayTexture = SDL_CreateTextureFromSurface(
+                        renderingPointer, newDaySurface
+                    );
+
+                    if(newDayTexture != nullptr) {
+                        dayRect.w = static_cast<float>(newDaySurface->w);
+                        dayRect.h = static_cast<float>(newDaySurface->h);
+
+                        SDL_DestroyTexture(dayTexture);
+                        dayTexture = newDayTexture;
+                    }
+                    else {
+                        std::cerr << "Failed to update day texture: "
+                            << SDL_GetError() << '\n';
+                    }
+
+                    SDL_DestroySurface(newDaySurface);
+                }
+                else {
+                    std::cerr << "Failed to render day text: "
+                        << SDL_GetError() << '\n';
+                }
+
                 std::cout << "Day " << day << " begins!\n";
             }
         }
@@ -237,14 +344,24 @@ int main() {
             }
         }
 
+        SDL_RenderTexture(
+            renderingPointer,
+            dayTexture,
+            nullptr,
+            &dayRect
+        );
+
         SDL_RenderPresent(renderingPointer);
         SDL_Delay(16);
     }
 
     SDL_DestroyTexture(terrainSheet);
     SDL_DestroyTexture(cropSheet);
+    SDL_DestroyTexture(dayTexture);
     SDL_DestroyRenderer(renderingPointer);
     SDL_DestroyWindow(window);
+    TTF_CloseFont(font);
+    TTF_Quit();
     SDL_Quit();
 
     return 0;
