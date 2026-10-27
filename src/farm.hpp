@@ -11,6 +11,12 @@ public:
         Withered
     };
 
+    enum class WaterResult {
+        Watered,
+        AlreadyWatered,
+        CropFinished
+    };
+
 private:
     Stage current = Seed;
     int wateringProgress = 0;
@@ -19,22 +25,17 @@ private:
 
 public:
 
-    void Water(){
+    WaterResult Water(){
 
         if(current == Matured || current == Withered){
-            std::cout<<"You can't water these now, sadly..\n";
-            return;
-        }
-        else{
-            if(wateredToday == true) {
-                std::cout<<"You have already watered the crop !!\n";
-            }
-            else if(wateredToday == false) {
-                wateredToday = true;
-                std::cout<<"Crop watered successfully\n";
-            } 
+            return WaterResult::CropFinished;
         }
 
+        if(wateredToday) {
+            return WaterResult::AlreadyWatered;
+        }
+            wateredToday = true;
+            return WaterResult::Watered;
     }   
 
     void DayCheck(){

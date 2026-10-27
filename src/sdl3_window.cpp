@@ -5,6 +5,7 @@
 #include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <SDL3_image/SDL_image.h>
@@ -13,6 +14,47 @@
 #include <string>
 #include "farm.hpp"
 #include <iostream>
+
+bool UpdateTextTexture(
+    SDL_Renderer* renderer,
+    TTF_Font* font,
+    const std::string& text,
+    SDL_Color color,
+    SDL_Texture*& texture,
+    SDL_FRect& destination
+) {
+    SDL_Surface* textSurface = TTF_RenderText_Blended(
+        font, text.c_str(), 0, color
+    );
+
+    if(textSurface == nullptr) {
+        std::cerr << "Failed to render text: "
+                  << SDL_GetError() << '\n';
+        return false;
+    }
+
+   SDL_Texture* newTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+
+   if(newTexture == nullptr) {
+        std::cerr << "Failed to convert Texture from surface: "
+                 << SDL_GetError() << '\n';
+        
+        SDL_DestroySurface(textSurface);
+        return false;
+   }
+
+    destination.w = static_cast<float>(textSurface->w);
+    destination.h = static_cast<float>(textSurface->h);
+
+    if(texture != nullptr) {
+        SDL_DestroyTexture(texture);
+    }   
+
+    texture = newTexture;
+
+    SDL_DestroySurface(textSurface);
+    return true;
+}
 
 int main() {
     
@@ -157,8 +199,19 @@ int main() {
     const SDL_FRect wildGrassB{32.0f, 0.0f, 16.0f, 16.0f};
     const SDL_FRect sandyGroundSource{16.0f, 48.0f, 16.0f, 16.0f};
 
+    SDL_Texture* notificationTexture = nullptr;
+
+    SDL_FRect notificationRect{
+        24.0f,
+        548.0f,
+        0.0f,
+        0.0f
+    };
+
     Tile farm[FARM_SIZE][FARM_SIZE];
     int day = 1;
+
+    std::string notificationText = "";
 
     int selectedRow = -1;
     int selectedCol = -1;
@@ -192,29 +245,66 @@ int main() {
 
                 if(selectedRow < 0 || selectedRow >= FARM_SIZE ||
                    selectedCol < 0 || selectedCol >= FARM_SIZE) {
-                    std::cout << "Select a tile first !\n";
+
+                    notificationText = "Select a tile first !";
+                    std::cout << notificationText << '\n';
                 }
                 else if(farm[selectedRow][selectedCol].hasCrop) {
-                    std::cout << "That tile is already occupied !\n";
-                }
+
+                    notificationText = "That tile is already occupied !";
+                    std::cout << notificationText << '\n';
+                }                    
                 else {
                     farm[selectedRow][selectedCol].hasCrop = true;
-                    std::cout << "Seed planted !!\n";
+                    notificationText = "Seed planted!";
+                    std::cout << notificationText << '\n';
                 }
+
+                UpdateTextTexture
+                (
+                    renderingPointer, 
+                    font, notificationText, textColor,
+                    notificationTexture, 
+                    notificationRect
+                );
             }
             else if(event.type == SDL_EVENT_KEY_DOWN &&
                     event.key.key == SDLK_W && !event.key.repeat) {
 
                 if(selectedRow < 0 || selectedRow >= FARM_SIZE ||
                    selectedCol < 0 || selectedCol >= FARM_SIZE) {
-                    std::cout << "Select a tile first !\n";
+                    notificationText = "Select a tile first !";
+                    std::cout << notificationText << '\n';
                 }
                 else if(!farm[selectedRow][selectedCol].hasCrop) {
-                    std::cout << "You can't apply water there\n";
+                    notificationText = "You can't apply water there !";
+                    std::cout << notificationText << '\n';
                 }
                 else {
-                    farm[selectedRow][selectedCol].crop.Water();
+                    Crop::WaterResult waterResult = farm[selectedRow][selectedCol].crop.Water();
+
+                    if (waterResult == Crop::WaterResult::Watered) {
+                        notificationText = "Crop watered !";
+                        std::cout << notificationText << '\n';
+                    }
+                    else if (waterResult == Crop::WaterResult::AlreadyWatered) {
+                        notificationText = "You have already watered this crop !";
+                        std::cout << notificationText << '\n';
+                    }
+                    else if (waterResult == Crop::WaterResult::CropFinished) {
+                        notificationText = "You can't water these now sadly..";
+                        std::cout << notificationText << '\n';                       
+                    
+                    }
                 }
+
+                UpdateTextTexture
+                (
+                        renderingPointer, 
+                        font, notificationText, textColor,
+                        notificationTexture, 
+                        notificationRect
+                );
             }
             else if(event.type == SDL_EVENT_KEY_DOWN &&
                     event.key.key == SDLK_E && !event.key.repeat) {
@@ -350,6 +440,15 @@ int main() {
             nullptr,
             &dayRect
         );
+
+        if(notificationTexture != nullptr){
+            SDL_RenderTexture(
+                renderingPointer, 
+                notificationTexture, 
+                nullptr, 
+                &notificationRect
+            );
+        }
 
         SDL_RenderPresent(renderingPointer);
         SDL_Delay(16);

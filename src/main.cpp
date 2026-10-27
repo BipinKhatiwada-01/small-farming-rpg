@@ -152,7 +152,17 @@ int main(){
             
             if (farm[r][c].hasCrop == true) { 
 
-                farm[r][c].crop.Water();
+               Crop::WaterResult waterResult = farm[r][c].crop.Water();
+
+               if (waterResult == Crop::WaterResult::AlreadyWatered) {
+                    std::cout<<"You have already watered the crop !!\n";
+               }
+               else if (waterResult == Crop::WaterResult::CropFinished) {
+                    std::cout<<"You can't water these now, sadly..\n";
+               }
+               else if (waterResult == Crop::WaterResult::Watered) {
+                    std::cout<<"Crop watered successfully\n";
+               }
 
             }   
             else {
