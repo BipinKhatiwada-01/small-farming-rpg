@@ -250,7 +250,7 @@ int main() {
                     std::cout << notificationText << '\n';
                 }
 
-                UpdateTextTexture
+                bool textUpdated = UpdateTextTexture
                 (
                     renderingPointer, 
                     font, notificationText, textColor,
@@ -258,7 +258,10 @@ int main() {
                     notificationRect
                 );
 
-                notificationStartTime = SDL_GetTicks();
+                if(textUpdated){
+                      notificationStartTime = SDL_GetTicks();
+                }
+
             }
             else if(event.type == SDL_EVENT_KEY_DOWN &&
                     event.key.key == SDLK_W && !event.key.repeat) {
@@ -290,15 +293,18 @@ int main() {
                     }
                 }
 
-                UpdateTextTexture
+                bool textUpdated = UpdateTextTexture
                 (
-                        renderingPointer, 
-                        font, notificationText, textColor,
-                        notificationTexture, 
-                        notificationRect
+                    renderingPointer, 
+                    font, notificationText, textColor,
+                    notificationTexture, 
+                    notificationRect
                 );
 
-                notificationStartTime = SDL_GetTicks();
+                if(textUpdated){
+                      notificationStartTime = SDL_GetTicks();
+                }
+
             }
             else if(event.type == SDL_EVENT_KEY_DOWN &&
                     event.key.key == SDLK_E && !event.key.repeat) {
