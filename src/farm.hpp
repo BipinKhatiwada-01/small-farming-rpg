@@ -84,4 +84,30 @@ public:
 struct Tile {
     bool hasCrop = false;
     Crop crop;
+
+    enum class HarvestResult{
+        Harvested,
+        NoCrop,
+        NotMature,
+        Withered
+    };
+
+    HarvestResult Harvest(){
+        if (hasCrop == false) {
+            return HarvestResult::NoCrop;
+        }
+
+        if (crop.GetStage() == Crop::Seed || crop.GetStage() == Crop::Sprouted) {
+            return HarvestResult::NotMature;
+        }
+        else if (crop.GetStage() == Crop::Withered) {
+            return HarvestResult::Withered;
+        }
+
+        hasCrop = false;
+        crop = Crop{};
+        return HarvestResult::Harvested;
+    }
 };
+
+

@@ -89,7 +89,8 @@ int main(){
         std::cout<<"1. Plant a crop\n";
         std::cout<<"2. Water a crop\n";
         std::cout<<"3. End day\n";
-        std::cout<<"4. Quit\n";
+        std::cout<<"4. Harvest\n";
+        std::cout<<"5. Quit\n";
 
         int choice;
 
@@ -97,7 +98,7 @@ int main(){
             std::cout << "Choose an action: ";
 
             if (std::cin >> choice) {
-                if (choice >= 1 && choice <= 4) {
+                if (choice >= 1 && choice <= 5) {
                     std::cin.ignore(
                         std::numeric_limits<std::streamsize>::max(), '\n'
                     );
@@ -182,6 +183,27 @@ int main(){
             day++;
         }
         else if (choice == 4) {
+
+            int r;
+            int c;
+
+            GetCoordinates(r, c);
+            Tile::HarvestResult harvestResult = farm[r][c].Harvest(); 
+
+                if (harvestResult == Tile::HarvestResult::Harvested) {
+                    std::cout << "Harvested the crop !\n";
+                }
+                else if (harvestResult == Tile::HarvestResult::Withered) {
+                    std::cout << "Crop has withered, can't harvest\n";
+                }
+                else if (harvestResult == Tile::HarvestResult::NotMature) {
+                    std::cout << "Crop is not mature enough to harvest\n";
+                }
+                else if (harvestResult == Tile::HarvestResult::NoCrop) {
+                    std::cout << "\nNo crop here!\n";
+                }           
+        }
+        else if (choice == 5) {
             std::cout<<"==========Thanks for playing !!=================\n";
             running = false;
        } 

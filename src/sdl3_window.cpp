@@ -288,8 +288,7 @@ int main() {
                     }
                     else if (waterResult == Crop::WaterResult::CropFinished) {
                         notificationText = "You can't water these now sadly..";
-                        std::cout << notificationText << '\n';                       
-                    
+                        std::cout << notificationText << '\n'; 
                     }
                 }
 
@@ -304,7 +303,47 @@ int main() {
                 if(textUpdated){
                       notificationStartTime = SDL_GetTicks();
                 }
+            }
+            else if(event.type == SDL_EVENT_KEY_DOWN &&
+                    event.key.key == SDLK_H && !event.key.repeat) {
 
+                if(selectedRow < 0 || selectedRow >= FARM_SIZE ||
+                   selectedCol < 0 || selectedCol >= FARM_SIZE) {
+                    notificationText = "Select a tile first !";
+                    std::cout << notificationText << '\n';
+                }
+                else {
+                    Tile::HarvestResult harvestResult = farm[selectedRow][selectedCol].Harvest();
+
+                    if (harvestResult == Tile::HarvestResult::Harvested) {
+                        notificationText = "Crop Harvested!";
+                        std::cout << notificationText << '\n';
+                    }
+                    else if (harvestResult == Tile::HarvestResult::Withered) {
+                        notificationText = "The crop has withered !";
+                        std::cout << notificationText << '\n';
+                    }
+                    else if (harvestResult == Tile::HarvestResult::NotMature) {
+                        notificationText = "The crop is not matured enough to harvest !";
+                        std::cout << notificationText << '\n'; 
+                    }
+                    else if (harvestResult == Tile::HarvestResult::NoCrop) {
+                        notificationText = "No crop there !";
+                        std::cout << notificationText << '\n';                    
+                    }
+                }
+
+                bool textUpdated = UpdateTextTexture
+                (
+                    renderingPointer, 
+                    font, notificationText, textColor,
+                    notificationTexture, 
+                    notificationRect
+                );
+
+                if(textUpdated){
+                      notificationStartTime = SDL_GetTicks();
+                }
             }
             else if(event.type == SDL_EVENT_KEY_DOWN &&
                     event.key.key == SDLK_E && !event.key.repeat) {
