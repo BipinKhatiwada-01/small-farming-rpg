@@ -1,96 +1,99 @@
 #include <iostream>
-#include "farm.hpp"
 #include <limits>
 
-void GetCoordinates(int& row, int& col){
+#include "farm.hpp"
+#include "inventory.hpp"
 
+namespace {
+constexpr int FARM_SIZE = 3;
+constexpr int SEED_PRICE = 3;
+constexpr int PRODUCE_SELL_PRICE = 5;
+
+void GetCoordinates(int& row, int& col) {
     while (true) {
-        std::cout << "Enter row (0 to 2): ";
+        std::cout << "Enter row (0 to " << FARM_SIZE - 1 << "): ";
 
         if (std::cin >> row) {
-            if (row >= 0 && row < 3) {
+            if (row >= 0 && row < FARM_SIZE) {
                 std::cin.ignore(
                     std::numeric_limits<std::streamsize>::max(), '\n'
                 );
                 break;
             }
-        }
-        else {
+        } else {
             std::cin.clear();
         }
 
         std::cin.ignore(
             std::numeric_limits<std::streamsize>::max(), '\n'
         );
-
-        std::cout << "Invalid row! Enter a value from 0 to 2.\n";
+        std::cout << "Invalid row! Enter a value from 0 to "
+                  << FARM_SIZE - 1 << ".\n";
     }
 
     while (true) {
-        std::cout << "Enter column (0 to 2): ";
+        std::cout << "Enter column (0 to " << FARM_SIZE - 1 << "): ";
 
         if (std::cin >> col) {
-            if (col >= 0 && col < 3) {
-            std::cin.ignore(
+            if (col >= 0 && col < FARM_SIZE) {
+                std::cin.ignore(
                     std::numeric_limits<std::streamsize>::max(), '\n'
-            );
+                );
                 break;
             }
-        }
-        else {
+        } else {
             std::cin.clear();
         }
 
         std::cin.ignore(
             std::numeric_limits<std::streamsize>::max(), '\n'
         );
-
-        std::cout << "Invalid column! Enter a value from 0 to 2.\n";
+        std::cout << "Invalid column! Enter a value from 0 to "
+                  << FARM_SIZE - 1 << ".\n";
     }
-
 }
+} // namespace
 
-int main(){
-
+int main() {
     int day = 1;
-    Tile farm[3][3];
-
+    Tile farm[FARM_SIZE][FARM_SIZE];
+    Inventory playerInventory;
+    int money = 0;
     bool running = true;
 
-    while(running){
+    while (running) {
+        std::cout << "==================== YOUR FARM ====================\n";
+        std::cout << "Day: " << day << '\n';
+        std::cout << "Seeds: " << playerInventory.GetSeedCount()
+                  << " | Produce: " << playerInventory.GetProduceCount()
+                  << " | Coins: " << money << "\n\n";
 
-        std::cout<<"====================YOUR FARM=====================\n";
-        std::cout << "\nDay: " << day << '\n';
-
-        for(int row = 0; row < 3; row++){
-            for(int col = 0; col < 3; col++){
-
-                if (farm[row][col].hasCrop == false) {
-                    std::cout<<"🟫";
-                }                
-                else if (farm[row][col].crop.GetStage() == Crop::Seed ) {
-                    std::cout<<"🟤";
+        for (int row = 0; row < FARM_SIZE; row++) {
+            for (int col = 0; col < FARM_SIZE; col++) {
+                if (!farm[row][col].hasCrop) {
+                    std::cout << "🟫";
+                } else if (farm[row][col].crop.GetStage() == Crop::Seed) {
+                    std::cout << "🟤";
+                } else if (farm[row][col].crop.GetStage() == Crop::Sprouted) {
+                    std::cout << "🌱";
+                } else if (farm[row][col].crop.GetStage() == Crop::Matured) {
+                    std::cout << "🌿";
+                } else if (farm[row][col].crop.GetStage() == Crop::Withered) {
+                    std::cout << "🍂";
                 }
-                else if (farm[row][col].crop.GetStage() == Crop::Sprouted) {
-                    std::cout<<"🌱";
-                }
-                else if (farm[row][col].crop.GetStage() == Crop::Matured) {
-                    std::cout<<"🌿";
-                }
-                else if (farm[row][col].crop.GetStage() == Crop::Withered) {
-                    std::cout<<"🍂";
-                }
-
             }
-                std::cout<<"\n";
+            std::cout << '\n';
         }
 
-        std::cout<<"\n==============Small farming RPG==================\n";
-        std::cout<<"1. Plant a crop\n";
-        std::cout<<"2. Water a crop\n";
-        std::cout<<"3. End day\n";
-        std::cout<<"4. Harvest\n";
-        std::cout<<"5. Quit\n";
+        std::cout << "\n============== Small Farming RPG ==============\n";
+        std::cout << "1. Plant a crop (1 seed)\n";
+        std::cout << "2. Water a crop\n";
+        std::cout << "3. End day\n";
+        std::cout << "4. Harvest\n";
+        std::cout << "5. Sell produce (" << PRODUCE_SELL_PRICE << " coins each)\n";
+        std::cout << "6. Buy a seed (" << SEED_PRICE << " coins each)\n";
+        std::cout << "7. Inspect inventory\n";
+        std::cout << "8. Quit\n";
 
         int choice;
 
@@ -98,116 +101,129 @@ int main(){
             std::cout << "Choose an action: ";
 
             if (std::cin >> choice) {
-                if (choice >= 1 && choice <= 5) {
+                if (choice >= 1 && choice <= 8) {
                     std::cin.ignore(
                         std::numeric_limits<std::streamsize>::max(), '\n'
                     );
                     break;
                 }
 
-                // An integer was read, but it was out of range.
                 std::cin.ignore(
                     std::numeric_limits<std::streamsize>::max(), '\n'
                 );
-            }
-            else {
-
-                // The input operation failed.
+            } else {
                 std::cin.clear();
                 std::cin.ignore(
                     std::numeric_limits<std::streamsize>::max(), '\n'
                 );
             }
 
-                std::cout << "Invalid choice! Enter a value from 1 to 4.\n";
-        
+            std::cout << "Invalid choice! Enter a value from 1 to 8.\n";
         }
 
         if (choice == 1) {
+            int row;
+            int col;
+            GetCoordinates(row, col);
 
-            int r;
-            int c;
+            Tile& selectedTile = farm[row][col];
 
-            GetCoordinates(r, c);
+            if (selectedTile.hasCrop) {
+                std::cout << "That tile is already occupied!\n";
+            } else if (!playerInventory.RemoveSeed()) {
+                std::cout << "You don't have any seeds. Buy one for "
+                          << SEED_PRICE << " coins.\n";
+            } else {
+                selectedTile.crop = Crop{};
+                selectedTile.hasCrop = true;
 
-            if (farm[r][c].hasCrop == false) { 
-
-                Crop crop;
-                farm[r][c].crop = crop;
-
-                farm[r][c].hasCrop = true;
-
-                std::cout << "\nYour seed has been planted!\n";
-            }   
-            else {
-                std::cout << "\nThat tile is already occupied!\n";
+                std::cout << "Your seed has been planted! Seeds remaining: "
+                          << playerInventory.GetSeedCount() << '\n';
             }
+        } else if (choice == 2) {
+            int row;
+            int col;
+            GetCoordinates(row, col);
 
-        }
-        else if (choice == 2) {
-            
-            int r;
-            int c;
+            if (farm[row][col].hasCrop) {
+                Crop::WaterResult waterResult = farm[row][col].crop.Water();
 
-            GetCoordinates(r, c);
-            
-            if (farm[r][c].hasCrop == true) { 
-
-               Crop::WaterResult waterResult = farm[r][c].crop.Water();
-
-               if (waterResult == Crop::WaterResult::AlreadyWatered) {
-                    std::cout<<"You have already watered the crop !!\n";
-               }
-               else if (waterResult == Crop::WaterResult::CropFinished) {
-                    std::cout<<"You can't water these now, sadly..\n";
-               }
-               else if (waterResult == Crop::WaterResult::Watered) {
-                    std::cout<<"Crop watered successfully\n";
-               }
-
-            }   
-            else {
-                std::cout << "\nCan't water in an empty land!\n";
+                if (waterResult == Crop::WaterResult::AlreadyWatered) {
+                    std::cout << "You have already watered this crop!\n";
+                } else if (waterResult == Crop::WaterResult::CropFinished) {
+                    std::cout << "You can't water this crop anymore.\n";
+                } else if (waterResult == Crop::WaterResult::Watered) {
+                    std::cout << "Crop watered successfully.\n";
+                }
+            } else {
+                std::cout << "Can't water an empty tile!\n";
             }
-        }
-        else if (choice == 3) {
-            for(int row = 0; row < 3; row++){
-                for(int col = 0; col < 3; col++){
-                    if (farm[row][col].hasCrop == true) {
-
+        } else if (choice == 3) {
+            for (int row = 0; row < FARM_SIZE; row++) {
+                for (int col = 0; col < FARM_SIZE; col++) {
+                    if (farm[row][col].hasCrop) {
                         farm[row][col].crop.DayCheck();
-
                     }
                 }
             }
+
             day++;
-        }
-        else if (choice == 4) {
+            std::cout << "Day " << day << " begins!\n";
+        } else if (choice == 4) {
+            int row;
+            int col;
+            GetCoordinates(row, col);
 
-            int r;
-            int c;
+            Tile::HarvestResult harvestResult = farm[row][col].Harvest();
 
-            GetCoordinates(r, c);
-            Tile::HarvestResult harvestResult = farm[r][c].Harvest(); 
+            if (harvestResult == Tile::HarvestResult::Harvested) {
+                playerInventory.AddProduce();
 
-                if (harvestResult == Tile::HarvestResult::Harvested) {
-                    std::cout << "Harvested the crop !\n";
-                }
-                else if (harvestResult == Tile::HarvestResult::Withered) {
-                    std::cout << "Crop has withered, can't harvest\n";
-                }
-                else if (harvestResult == Tile::HarvestResult::NotMature) {
-                    std::cout << "Crop is not mature enough to harvest\n";
-                }
-                else if (harvestResult == Tile::HarvestResult::NoCrop) {
-                    std::cout << "\nNo crop here!\n";
-                }           
-        }
-        else if (choice == 5) {
-            std::cout<<"==========Thanks for playing !!=================\n";
+                std::cout << "Harvested the crop! Produce: "
+                          << playerInventory.GetProduceCount() << '\n';
+            } else if (harvestResult == Tile::HarvestResult::Withered) {
+                std::cout << "Crop has withered; can't harvest it.\n";
+            } else if (harvestResult == Tile::HarvestResult::NotMature) {
+                std::cout << "Crop is not mature enough to harvest.\n";
+            } else if (harvestResult == Tile::HarvestResult::NoCrop) {
+                std::cout << "No crop here!\n";
+            }
+        } else if (choice == 5) {
+            if (playerInventory.RemoveProduce()) {
+                money += PRODUCE_SELL_PRICE;
+
+                std::cout << "Sold 1 produce for " << PRODUCE_SELL_PRICE
+                          << " coins. Total coins: " << money << '\n';
+            } else {
+                std::cout << "No produce to sell. Coins remain at "
+                          << money << ".\n";
+            }
+        } else if (choice == 6) {
+            if (money >= SEED_PRICE) {
+                money -= SEED_PRICE;
+                playerInventory.AddSeed();
+
+                std::cout << "Bought 1 seed. Seeds: "
+                          << playerInventory.GetSeedCount()
+                          << " | Coins: " << money << '\n';
+            } else {
+                std::cout << "Not enough coins to buy a seed. You need "
+                          << SEED_PRICE << " coins; you have "
+                          << money << ".\n";
+            }
+        } else if (choice == 7) {
+            std::cout << "Inventory — Seeds: "
+                      << playerInventory.GetSeedCount()
+                      << " | Produce: "
+                      << playerInventory.GetProduceCount()
+                      << " | Coins: " << money << '\n';
+        } else if (choice == 8) {
+            std::cout << "========== Thanks for playing! ==========\n";
             running = false;
-       } 
+        }
 
+        std::cout << '\n';
     }
 
+    return 0;
 }

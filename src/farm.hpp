@@ -1,7 +1,4 @@
 #pragma once
-
-#include <iostream>
-
 class Crop {
 public:
     enum Stage {
