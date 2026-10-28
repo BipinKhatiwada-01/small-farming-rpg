@@ -49,6 +49,28 @@ bool UpdateTextTexture(
     return true;
 }
 
+
+bool UpdateHudTexture(
+    SDL_Renderer* renderer,
+    TTF_Font* font,
+    SDL_Color color,
+    int day,
+    const Inventory& inventory,
+    int money,
+    SDL_Texture*& texture,
+    SDL_FRect& destination
+) {
+    const std::string hudText =
+        "Day " + std::to_string(day)
+        + "   Seeds: " + std::to_string(inventory.GetSeedCount())
+        + "   Produce: " + std::to_string(inventory.GetProduceCount())
+        + "   Coins: " + std::to_string(money);
+
+    return UpdateTextTexture(
+        renderer, font, hudText, color, texture, destination
+    );
+}
+
 int main() {
     constexpr int WINDOW_W = 800;
     constexpr int WINDOW_H = 600;
@@ -126,23 +148,32 @@ int main() {
         return 1;
     }
     SDL_Color textColor{255, 255, 255, 255};
-    SDL_Texture* dayTexture = nullptr;
-    SDL_FRect dayRect{
+
+    Tile farm[FARM_SIZE][FARM_SIZE];
+    Inventory playerInventory;
+    int day = 1;
+    int money = 0;
+
+    SDL_Texture* hudTexture = nullptr;
+    SDL_FRect hudRect{
         24.0f,
-        24.0f,
+        18.0f,
         0.0f,
         0.0f
     };
-    if(!UpdateTextTexture(
+
+    if(!UpdateHudTexture(
             renderingPointer,
             font,
-            "Day 1",
             textColor,
-            dayTexture,
-            dayRect
+            day,
+            playerInventory,
+            money,
+            hudTexture,
+            hudRect
         )) {
-        std::cerr << "Failed to create day texture: "
-        << SDL_GetError() << '\n';
+        std::cerr << "Failed to create HUD texture: "
+                  << SDL_GetError() << '\n';
         TTF_CloseFont(font);
         TTF_Quit();
         SDL_DestroyTexture(terrainSheet);
@@ -164,14 +195,11 @@ int main() {
         0.0f,
         0.0f
     };
-    Tile farm[FARM_SIZE][FARM_SIZE];
-    Inventory playerInventory;
-    int day = 1;
-    int money = 0;
     std::string notificationText = "";
     Uint64 notificationStartTime = 0;
     int selectedRow = -1;
     int selectedCol = -1;
+    bool hudNeedsUpdate = false;
     bool running = true;
     while(running) {
         SDL_Event event;
@@ -205,6 +233,7 @@ int main() {
                 else if (playerInventory.RemoveSeed()) {
                     farm[selectedRow][selectedCol].crop = Crop{};
                     farm[selectedRow][selectedCol].hasCrop = true;
+                    hudNeedsUpdate = true;
                     notificationText = "Seed planted! Seeds: "
                         + std::to_string(playerInventory.GetSeedCount());
                     std::cout << notificationText << '\n';
@@ -272,6 +301,7 @@ int main() {
                     Tile::HarvestResult harvestResult = farm[selectedRow][selectedCol].Harvest();
                     if (harvestResult == Tile::HarvestResult::Harvested) {
                         playerInventory.AddProduce();
+                        hudNeedsUpdate = true;
                         notificationText = "Crop Harvested! Inventory: " + std::to_string(playerInventory.GetProduceCount());
                         std::cout << notificationText << '\n';
                     }
@@ -321,6 +351,7 @@ int main() {
                 event.key.key == SDLK_S && !event.key.repeat) {
                 if (playerInventory.RemoveProduce()) {
                     money += PRODUCE_SELL_PRICE;
+                    hudNeedsUpdate = true;
                     notificationText = "Sold 1! Produce: "
                         + std::to_string(playerInventory.GetProduceCount())
                         + " | Coins: "
@@ -348,6 +379,7 @@ int main() {
                 if (money >= SEED_PRICE) {
                     money -= SEED_PRICE;
                     playerInventory.AddSeed();
+                    hudNeedsUpdate = true;
                     notificationText = "Bought seed! Seeds: "
                         + std::to_string(playerInventory.GetSeedCount())
                         + " | Coins: "
@@ -383,18 +415,25 @@ int main() {
                     }
                 }
                 day++;
-                std::string dayText = "Day " + std::to_string(day);
-                UpdateTextTexture(
-                    renderingPointer,
-                    font,
-                    dayText,
-                    textColor,
-                    dayTexture,
-                    dayRect
-                );
+                hudNeedsUpdate = true;
                 std::cout << "Day " << day << " begins!\n";
             }
         }
+
+        if (hudNeedsUpdate) {
+            UpdateHudTexture(
+                renderingPointer,
+                font,
+                textColor,
+                day,
+                playerInventory,
+                money,
+                hudTexture,
+                hudRect
+            );
+            hudNeedsUpdate = false;
+        }
+
         // Clear the frame, then draw the grass around the farm.
         SDL_SetRenderDrawColor(renderingPointer, 30, 43, 34, 255);
         SDL_RenderClear(renderingPointer);
@@ -463,12 +502,22 @@ int main() {
                 }
             }
         }
+        // Persistent HUD: keep the day and all resource totals visible.
+        SDL_FRect hudPanelRect{
+            12.0f,
+            8.0f,
+            static_cast<float>(WINDOW_W - 24),
+            hudRect.h + 20.0f
+        };
+        SDL_SetRenderDrawColor(renderingPointer, 24, 29, 24, 190);
+        SDL_RenderFillRect(renderingPointer, &hudPanelRect);
         SDL_RenderTexture(
             renderingPointer,
-            dayTexture,
+            hudTexture,
             nullptr,
-            &dayRect
+            &hudRect
         );
+
         if(notificationTexture != nullptr
             && SDL_GetTicks() - notificationStartTime < 1500){
             SDL_FRect notificationPanelRect{
@@ -492,7 +541,7 @@ int main() {
     SDL_DestroyTexture(notificationTexture);
     SDL_DestroyTexture(terrainSheet);
     SDL_DestroyTexture(cropSheet);
-    SDL_DestroyTexture(dayTexture);
+    SDL_DestroyTexture(hudTexture);
     SDL_DestroyRenderer(renderingPointer);
     SDL_DestroyWindow(window);
     TTF_CloseFont(font);
